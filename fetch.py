@@ -68,5 +68,5 @@ def cache_usage() -> int:
 
 if __name__ == '__main__':
 
-    print(f"current case size: {cache_usage()} bytes")
+    print(f"current cache size: {cache_usage()} bytes")
     print(f"user agent: {user_agent}")
