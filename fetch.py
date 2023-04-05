@@ -7,7 +7,7 @@ import base64
 from sys import version_info
 
 
-__tmp_dir = f"{tempfile.gettempdir()}/fetchpy-cache"
+__tmp_dir = os.path.join(tempfile.gettempdir(), "fetchpy-cache")
 expiry_seconds: int = 600
 user_agent = f"python{version_info.major}.{version_info.minor} urllib"
 
@@ -53,29 +53,28 @@ def load(filepath: str) -> str|None:
 def path(url: str) -> str:
     seed = url
     hash = hashlib.md5(seed.encode())
-    path = f"{__tmp_dir}/{hash.hexdigest()}"
+    path = os.path.join(__tmp_dir, hash.hexdigest())
     return path
 
 
-def fetch(url: str, headers: dict = None) -> str:
+def fetch(url: str, headers: dict = None, auth: tuple = None) -> str:
     filepath = path(url)
     content = load(filepath)
     if not content:
-        content = get(url, headers=headers)
+        content = get(url, headers=headers, auth=auth)
         save(filepath, content)
     return content
 
 
 def cache_usage() -> int:
     file_sizes = (
-        os.path.getsize(f"{__tmp_dir}/{filename}")
+        os.path.getsize(os.path.join(__tmp_dir, filename))
         for filename in os.listdir(__tmp_dir)
-        if os.path.isfile(f"{__tmp_dir}/{filename}")
+        if os.path.isfile(os.path.join(__tmp_dir, filename))
     )
-
     return sum(file_sizes)
 
 if __name__ == '__main__':
 
-    print(f"current cache size: {cache_usage()} bytes")
+    print(f"current cache size: {cache_usage():,} bytes")
     print(f"user agent: {user_agent}")
