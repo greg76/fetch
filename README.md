@@ -9,6 +9,7 @@ it does:
 ## api
 ```
 expiry_seconds: int (default: 600)
+user_agent: str (default: "python3.x urllib")
 
 def fetch(url, headers: dict|None) -> str
 ```
