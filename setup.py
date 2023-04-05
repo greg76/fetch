@@ -16,6 +16,6 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/greg76/fetch/issues"
     },
     license='MIT',
-    packages=['fetch'],
+    packages=setuptools.find_packages(),
     install_requires=[],
 )

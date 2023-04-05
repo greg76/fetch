@@ -7,7 +7,6 @@ it does:
 * no external dependencies, standard library only
 
 ## api
-
 ```
 expiry_seconds: int (default: 600)
 
@@ -15,5 +14,6 @@ def fetch(url, headers: dict|None) -> str
 ```
 
 ## how to install
-
-`pip install git+https://github.com/greg76/fetch.git`
+```
+pip install git+https://github.com/greg76/fetch.git
+```
