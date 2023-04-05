@@ -1,5 +1,5 @@
 # fetch.py
-just an other simple urllib wrapper for doing api requests. handy when you want to quickly iterate over consuming REST apis, but you don't always want to wait for longer then usual response times, you would only want to quickly see your changes with some recent responses.
+just an other simple urllib wrapper for api requests. handy when you want to quickly iterate over consuming REST apis, but you don't always want to wait for longer then usual response times. quickly see your changes with some recent responses from a local file cache. (cache being located in the temp folder of the OS)
 
 it does:
 * binary to text decoding
