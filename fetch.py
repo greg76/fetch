@@ -3,6 +3,7 @@ import tempfile
 import hashlib
 import datetime
 import os
+import base64
 from sys import version_info
 
 
@@ -11,12 +12,20 @@ expiry_seconds: int = 600
 user_agent = f"python{version_info.major}.{version_info.minor} urllib"
 
 
-def get(url: str, headers: dict = None) -> str:
+def get(url: str, headers: dict = None, auth: tuple = None) -> str:
+
     if headers:
         request = urllib.request.Request(url, headers=headers)
     else:
         request = urllib.request.Request(url)
+
     request.add_header("User-Agent", user_agent)
+
+    if auth:
+        raw_token = '%s:%s' % auth
+        base64string = base64.b64encode(raw_token.encode())
+        request.add_header("Authorization", "Basic %s" % base64string)
+
     response = urllib.request.urlopen(request)
     charset = response.info().get_param('charset')
     content = response.read().decode(charset or 'utf-8')

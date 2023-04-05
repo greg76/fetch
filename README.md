@@ -11,7 +11,9 @@ it does:
 expiry_seconds: int (default: 600)
 user_agent: str (default: "python3.x urllib")
 
-def fetch(url, headers: dict|None) -> str
+def fetch(url, headers: dict|None, auth: dict|None) -> str
+    headers: key, value pairs that you would like to add to http request headers
+    auth: (user_name, password) tuple for basic auth
 ```
 
 ## how to install
