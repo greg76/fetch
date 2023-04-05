@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='fetch',
-    version='0.0.1',
+    version='0.0.2',
     author='Gergely Dervarics',
     author_email='dervarics@gmail.com',
     description='http request wrapper with simple caching',

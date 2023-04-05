@@ -3,10 +3,12 @@ import tempfile
 import hashlib
 import datetime
 import os
+from sys import version_info
 
 
 __tmp_dir = f"{tempfile.gettempdir()}/fetchpy-cache"
 expiry_seconds: int = 600
+user_agent = f"python{version_info.major}.{version_info.minor} urllib"
 
 
 def get(url: str, headers: dict = None) -> str:
@@ -14,6 +16,7 @@ def get(url: str, headers: dict = None) -> str:
         request = urllib.request.Request(url, headers=headers)
     else:
         request = urllib.request.Request(url)
+    request.add_header("User-Agent", user_agent)
     response = urllib.request.urlopen(request)
     charset = response.info().get_param('charset')
     content = response.read().decode(charset or 'utf-8')
@@ -66,3 +69,4 @@ def cache_usage() -> int:
 if __name__ == '__main__':
 
     print(f"current case size: {cache_usage()} bytes")
+    print(f"user agent: {user_agent}")
