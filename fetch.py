@@ -7,24 +7,29 @@ import base64
 from sys import version_info
 
 
-__tmp_dir = os.path.join(tempfile.gettempdir(), "fetchpy-cache")
 expiry_seconds: int = 600
-user_agent = f"python{version_info.major}.{version_info.minor} urllib"
+
+__tmp_dir = os.path.join(tempfile.gettempdir(), "fetchpy-cache")
+__default_user_agent = f"python{version_info.major}.{version_info.minor} urllib"
+
+
+def basicAuthHeader(credentials: tuple) -> tuple:
+    user_name, password = credentials
+    raw_token = f"{user_name}:{password}"
+    base64string = base64.b64encode(raw_token.encode()).decode()
+    return "Authorization", f"Basic {base64string}"
 
 
 def get(url: str, headers: dict = None, auth: tuple = None) -> str:
-
+    request = urllib.request.Request(url)
+    if not headers or (headers and "User-Agent" not in headers):
+        request.add_header("User-Agent", __default_user_agent)
     if headers:
-        request = urllib.request.Request(url, headers=headers)
-    else:
-        request = urllib.request.Request(url)
-
-    request.add_header("User-Agent", user_agent)
-
+        for key, value in headers.items():
+            if value:
+                request.add_header(key, value)
     if auth:
-        raw_token = '%s:%s' % auth
-        base64string = base64.b64encode(raw_token.encode())
-        request.add_header("Authorization", "Basic %s" % base64string)
+        request.add_header(*basicAuthHeader(auth))
 
     response = urllib.request.urlopen(request)
     charset = response.info().get_param('charset')
@@ -74,7 +79,8 @@ def cache_usage() -> int:
     )
     return sum(file_sizes)
 
+
 if __name__ == '__main__':
 
     print(f"current cache size: {cache_usage():,} bytes")
-    print(f"user agent: {user_agent}")
+    print(f"user agent: {__default_user_agent}")

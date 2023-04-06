@@ -5,11 +5,11 @@ it does:
 * binary to text decoding
 * caching to system temp folder (under `fetchpy-cache` sub-folder)
 * no external dependencies, standard library only
+* default user agent is set to: "python3.x urllib"
 
 ## api
 ```
 expiry_seconds: int (default: 600)
-user_agent: str (default: "python3.x urllib")
 
 def fetch(url, headers: dict|None, auth: dict|None) -> str
     headers: key, value pairs that you would like to add to http request headers
