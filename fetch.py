@@ -10,8 +10,8 @@ from sys import version_info
 expiry_seconds: int = 600
 cache_size_in_MB: float = 5
 
-__tmp_dir = os.path.join(tempfile.gettempdir(), "fetchpy-cache")
-__default_user_agent = f"python{version_info.major}.{version_info.minor} urllib"
+_tmp_dir = os.path.join(tempfile.gettempdir(), "fetchpy-cache")
+_default_user_agent = f"python{version_info.major}.{version_info.minor} urllib"
 
 
 def basicAuthHeader(credentials: tuple) -> tuple:
@@ -24,7 +24,7 @@ def basicAuthHeader(credentials: tuple) -> tuple:
 def get(url: str, headers: dict = None, auth: tuple = None) -> str:
     request = urllib.request.Request(url)
     if not headers or (headers and "User-Agent" not in headers):
-        request.add_header("User-Agent", __default_user_agent)
+        request.add_header("User-Agent", _default_user_agent)
     if headers:
         for key, value in headers.items():
             if value:
@@ -39,14 +39,14 @@ def get(url: str, headers: dict = None, auth: tuple = None) -> str:
 
 
 def save(filepath: str, content: str):
-    if not os.path.isdir(__tmp_dir):
-        os.makedirs(__tmp_dir)
+    if not os.path.isdir(_tmp_dir):
+        os.makedirs(_tmp_dir)
 
     with open(filepath, 'w') as f:
         f.write(content)
 
 
-def load(filepath: str) -> str|None:
+def load(filepath: str) -> str | None:
     if os.path.isfile(filepath):
         modified = max(os.path.getctime(filepath), os.path.getmtime(filepath))
         now = datetime.datetime.now().timestamp()
@@ -59,7 +59,7 @@ def load(filepath: str) -> str|None:
 def path(url: str) -> str:
     seed = url
     hash = hashlib.md5(seed.encode())
-    path = os.path.join(__tmp_dir, hash.hexdigest())
+    path = os.path.join(_tmp_dir, hash.hexdigest())
     return path
 
 
@@ -72,41 +72,43 @@ def fetch(url: str, headers: dict = None, auth: tuple = None) -> str:
     return content
 
 
-def cache_list() -> list:
-    details = [
-        {
-            "path":     os.path.join(__tmp_dir, filename),
-            "size":     os.path.getsize(os.path.join(__tmp_dir, filename)),
-            "updated":  max(
-                            os.path.getctime(os.path.join(__tmp_dir, filename)),
-                            os.path.getmtime(os.path.join(__tmp_dir, filename))
-                        )
-        }
-        for filename in os.listdir(__tmp_dir)
-        if os.path.isfile(os.path.join(__tmp_dir, filename))
-    ]
-    details.sort(key = lambda x: x["updated"])
-    return details
+class Cache:
+    def __init__(self):
+        self.refresh_details()
+
+    def refresh_details(self) -> list:
+        global _tmp_dir
+
+        self.details = [
+            {
+                "path":     os.path.join(_tmp_dir, filename),
+                "size":     os.path.getsize(os.path.join(_tmp_dir, filename)),
+                "updated":  max(
+                    os.path.getctime(os.path.join(_tmp_dir, filename)),
+                    os.path.getmtime(os.path.join(_tmp_dir, filename))
+                )
+            }
+            for filename in os.listdir(_tmp_dir)
+            if os.path.isfile(os.path.join(_tmp_dir, filename))
+        ]
+        self.details.sort(key=lambda x: x["updated"])
+        self.size = sum(file["size"] for file in self.details)
+
+    def free(self):
+        to_be_freed = self.size - cache_size_in_MB * 10**6
+        if to_be_freed > 0:
+            for file in self.details:
+                os.remove(file["path"])
+                to_be_freed -= file["size"]
+                if to_be_freed <= 0:
+                    break
 
 
-def free_cache():
-    to_be_freed = cache_usage() - cache_size_in_MB * 10**6
-    if to_be_freed > 0:
-        for file in cache_list():
-            os.remove(file["path"])
-            to_be_freed -= file["size"]
-            if to_be_freed <= 0:
-                break
-
-
-def cache_usage() -> int:
-    file_sizes = (file["size"] for file in cache_list())
-    return sum(file_sizes)
-
+cache = Cache()
 
 if __name__ == '__main__':
-    print(f'cache location: "{__tmp_dir}"')
-    free_cache()
-    print(f"cache size: {cache_usage():,} / {cache_size_in_MB * 10**6:,.0f} bytes")
-    print(f'user agent: "{__default_user_agent}"')
-
+    print(f'cache location: "{_tmp_dir}"')
+    cache.free()
+    print(
+        f"cache size: {cache.size:,} / {cache_size_in_MB * 10**6:,.0f} bytes, {len(cache.details)} files")
+    print(f'user agent: "{_default_user_agent}"')
