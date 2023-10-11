@@ -74,6 +74,11 @@ def fetch(url: str, headers: dict = None, auth: tuple = None) -> str:
 
 class Cache:
     def __init__(self):
+        global _tmp_dir
+
+        if not os.path.isdir(_tmp_dir):
+            os.makedirs(_tmp_dir)
+
         self.refresh_details()
 
     def refresh_details(self) -> list:
